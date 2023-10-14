@@ -1,7 +1,9 @@
 pub mod from_vtf_image_format;
 pub mod from_ddsfile_d3d_format;
-pub mod from_wic_pixel_format;
 pub mod from_webp;
+
+#[cfg(windows)]
+pub mod from_wic_pixel_format;
 
 use half::f16;
 use rayon::{slice::ParallelSlice, prelude::ParallelIterator};

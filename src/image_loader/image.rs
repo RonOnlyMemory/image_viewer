@@ -145,6 +145,25 @@ impl Image {
 		tree.render(transform, &mut pixmap.as_mut());
 		Some(Self::from_single_image([width, height], pixmap.data()))
 	}
+	pub fn load_vtf(data: &[u8]) -> Option<Self> {
+		let mut data = data.to_vec();
+		let vtf = vtf::from_bytes(&mut data).ok()?;
+		let a = vtf.highres_image.get_frame(0).unwrap();
+		let width = vtf.highres_image.width as u32;
+		let height = vtf.highres_image.height as u32;
+		let res = [width, height];
+		let data = PixelFormat::from(vtf.header.highres_image_format).convert_to_rgba8(res, a).unwrap();
+		Some(Self::from_single_image([vtf.highres_image.width as _, vtf.highres_image.height as _], &data))
+	}
+	pub fn load_dds(data: &[u8]) -> Option<Self> {
+		let dds = ddsfile::Dds::read(data).ok()?;
+		let width = dds.get_width();
+		let height = dds.get_height();
+		let res = [width, height];
+		let data = PixelFormat::from(dds.get_d3d_format().unwrap()).convert_to_rgba8(res, &dds.data).unwrap();
+		Some(Self::from_single_image([width, height], &data))
+	}
+	#[cfg(windows)]
 	pub fn load_wic(data: &[u8]) -> Option<Self> {
 		let decoder = native_windows_gui::ImageDecoder::new().ok()?;
 		let image = decoder.from_stream(data).ok()?;
@@ -166,23 +185,9 @@ impl Image {
 		}
 		Some(Self::from_multiple_frames([w, h], &frames))
 	}
-	pub fn load_vtf(data: &[u8]) -> Option<Self> {
-		let mut data = data.to_vec();
-		let vtf = vtf::from_bytes(&mut data).ok()?;
-		let a = vtf.highres_image.get_frame(0).unwrap();
-		let width = vtf.highres_image.width as u32;
-		let height = vtf.highres_image.height as u32;
-		let res = [width, height];
-		let data = PixelFormat::from(vtf.header.highres_image_format).convert_to_rgba8(res, a).unwrap();
-		Some(Self::from_single_image([vtf.highres_image.width as _, vtf.highres_image.height as _], &data))
-	}
-	pub fn load_dds(data: &[u8]) -> Option<Self> {
-		let dds = ddsfile::Dds::read(data).ok()?;
-		let width = dds.get_width();
-		let height = dds.get_height();
-		let res = [width, height];
-		let data = PixelFormat::from(dds.get_d3d_format().unwrap()).convert_to_rgba8(res, &dds.data).unwrap();
-		Some(Self::from_single_image([width, height], &data))
+	#[cfg(not(windows))]
+	pub fn load_wic(_data: &[u8]) -> Option<Self> {
+		None
 	}
 }
 
