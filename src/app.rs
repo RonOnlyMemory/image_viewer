@@ -159,6 +159,7 @@ fn valid_extension(p: Option<&OsStr>) -> bool {
 		"jfif" => true,
 		"vtf" => true,
 		"dds" => true,
+		"arw" => true,
 		_ => ImageFormat::from_extension(p).map(|_| true).unwrap_or(false),
 	}
 }
