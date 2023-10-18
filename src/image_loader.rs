@@ -18,11 +18,18 @@ pub fn load(data: &[u8]) -> Result<Image, String> {
 			} else {
 				Image::load_img(data).ok_or_else(|| "png img error".to_string())
 			}
-		},
+		}
 		Some(::image::ImageFormat::WebP) => Image::load_web_p(data).ok_or_else(|| "webp error".to_string()),
 		Some(::image::ImageFormat::Dds) => Image::load_dds(data).ok_or_else(|| "dds error".to_string()),
-		Some(_) => Image::load_img(data).ok_or_else(|| "img error".to_string()),
-		_ => {
+		Some(::image::ImageFormat::Tiff) => {
+			let img = Image::load_img(data).ok_or_else(|| "img error".to_string());
+			if img.is_ok() {
+				img
+			} else {
+				Image::load_wic(data).ok_or_else(|| "wic error".to_string())
+			}
+		}
+		None => {
 			let img = Image::load_jxl(data);
 			if img.is_some() {
 				return img.ok_or_else(|| "jxl error".to_string());
@@ -41,6 +48,7 @@ pub fn load(data: &[u8]) -> Result<Image, String> {
 			}
 			Err("image format not supported".to_string())
 		}
+		Some(_) => Image::load_img(data).ok_or_else(|| "img error".to_string()),
 	}
 }
 
