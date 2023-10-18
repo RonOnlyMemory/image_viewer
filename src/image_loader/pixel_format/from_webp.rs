@@ -7,6 +7,8 @@ impl From<webp_animation::ColorMode> for PixelFormat {
 		match value {
 			webp_animation::ColorMode::Rgba => Self::Rgba8,
 			webp_animation::ColorMode::Bgra => Self::Bgra8,
+			webp_animation::ColorMode::Rgb => Self::Rgb8,
+			webp_animation::ColorMode::Bgr => Self::Bgr8,
 		}
 	}
 }

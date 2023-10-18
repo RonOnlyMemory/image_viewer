@@ -40,10 +40,9 @@ impl Image {
 	pub fn load_jxl(data: &[u8]) -> Option<Self> {
 		let mut img = JxlImage::from_reader(data).ok()?;
 		let SizeHeader { width, height, .. } = img.image_header().size;
-		let mut r = img.renderer();
 		let mut b = None;
 		while {
-			let a = r.render_next_frame().ok()?;
+			let a = img.render_next_frame().ok()?;
 			match a {
 				jxl_oxide::RenderResult::Done(r) => {
 					b = Some(r);
