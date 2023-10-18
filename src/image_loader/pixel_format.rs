@@ -84,7 +84,15 @@ fn map_channels<'a>(
 	chunk_len: usize,
 	f: impl Fn(&[u8]) -> [u8; 4] +'static +Send +Sync,
 ) -> Vec<u8> {
-	data.par_chunks(chunk_len).flat_map(f).collect()
+	let mut vec: Vec<[u8; 4]> = data.par_chunks(chunk_len).map(|a| f(a)).collect();
+
+	assert_eq!(vec.len()*chunk_len, data.len());
+	unsafe { // todo: use vec.into_flattened() when available in stable
+		let (ptr, length, capacity) = (vec.as_mut_ptr(), vec.len()*4, vec.capacity()*4);
+		let _ = vec.leak();
+		let ret: Vec<u8> = Vec::from_raw_parts(ptr as *mut _, length, capacity);
+		ret
+	}
 }
 
 impl PixelFormat {
