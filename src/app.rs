@@ -152,7 +152,8 @@ fn valid_extension(p: Option<&OsStr>) -> bool {
 		return false;
 	}
 	let p = p.unwrap();
-	match p.to_str().unwrap() {
+	let p = p.to_str().unwrap().to_ascii_lowercase();
+	match &p[..] {
 		"svg" => true,
 		"jxl" => true,
 		"jfif" => true,
