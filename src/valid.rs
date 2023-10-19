@@ -14,12 +14,8 @@ pub fn file(path: &PathBuf) -> bool {
 
 #[cfg(windows)]
 fn wic_file(path: Option<&str>) -> Option<()> {
-	let time = std::time::Instant::now();
-	dbg!(time.elapsed());
 	let decoder = native_windows_gui::ImageDecoder::new().ok()?;
-	dbg!(time.elapsed());
 	decoder.from_filename(path?).ok()?;
-	dbg!(time.elapsed());
 	Some(())
 }
 
