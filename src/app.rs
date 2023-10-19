@@ -82,11 +82,13 @@ impl App {
 			c += 1;
 		}
 		self.file_index = file_index;
+		self.async_image_loader.set_index(file_index);
 		self.files = files;
 		self.animation_player.clear();
 	}
 	pub fn add_file_offset(&mut self, offset: isize) {
 		self.file_index = ((self.file_index as isize +self.files.len() as isize +offset) as usize)%self.files.len();
+		self.async_image_loader.set_index(self.file_index);
 		self.animation_player.clear();
 	}
 	pub fn path(&self) -> &PathBuf {
