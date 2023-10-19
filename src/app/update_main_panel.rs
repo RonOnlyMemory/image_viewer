@@ -154,6 +154,8 @@ impl App {
 					} else {
 						frame.close();
 					}
+					self.target_pos = Vec2::ZERO;
+					self.scale_target = -0.3;
 				}
 				if ui.input(|i| i.key_pressed(egui::Key::Space)) {
 					self.fit_image(frame);
