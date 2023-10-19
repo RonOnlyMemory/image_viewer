@@ -2,13 +2,12 @@ pub mod update_bottom_bar;
 pub mod update_main_panel;
 pub mod update_top_bar;
 
-use std::{fs, path::PathBuf, ffi::OsStr};
+use std::{fs, path::PathBuf};
 
 use egui::epaint::Vec2;
-use image::ImageFormat;
 use native_dialog::FileDialog;
 
-use crate::{animation_player::AnimationPlayer, frame::Frame};
+use crate::{animation_player::AnimationPlayer, frame::Frame, valid};
 
 pub struct App {
 	pub pos: Vec2,
@@ -38,7 +37,7 @@ impl App {
 		for p in fs::read_dir(iter.next().unwrap()).unwrap().into_iter() {
 			let p = p.unwrap();
 			let p3 = p.path();
-			if !valid_extension(p.path().extension()) {
+			if !valid::file(&p3) {
 				continue;
 			}
 			files.push(p3.clone());
@@ -69,7 +68,7 @@ impl App {
 		for p in fs::read_dir(iter.next().unwrap()).unwrap().into_iter() {
 			let p = p.unwrap();
 			let p3 = p.path();
-			if !valid_extension(p.path().extension()) {
+			if !valid::file(&p3) {
 				continue;
 			}
 			files.push(p3.clone());
@@ -144,22 +143,5 @@ impl App {
 		egui::CentralPanel::default().show(ctx, |_ui| {});
 		self.update_main_panel(ctx, frame);
 		self.update_bottom_bar(ctx, frame);
-	}
-}
-
-fn valid_extension(p: Option<&OsStr>) -> bool {
-	if p.is_none() {
-		return false;
-	}
-	let p = p.unwrap();
-	let p = p.to_str().unwrap().to_ascii_lowercase();
-	match &p[..] {
-		"svg" => true,
-		"jxl" => true,
-		"jfif" => true,
-		"vtf" => true,
-		"dds" => true,
-		"arw" => true,
-		_ => ImageFormat::from_extension(p).map(|_| true).unwrap_or(false),
 	}
 }

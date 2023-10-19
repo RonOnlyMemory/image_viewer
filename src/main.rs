@@ -25,6 +25,7 @@ pub mod animation_player;
 pub mod frame;
 pub mod image_loader;
 pub mod gamepad_input;
+pub mod valid;
 
 pub struct AppStates {
 	pub drag_window: bool,
