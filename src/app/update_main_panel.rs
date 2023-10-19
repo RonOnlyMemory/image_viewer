@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use egui::{Vec2, Pos2};
 
 use crate::{image_loader, widget::{close_button::CloseButton, image_viewer::ImageViewer}};
@@ -11,11 +13,13 @@ impl App {
 			let mut new_image = false;
 			self.animation_player.animation.get_or_insert_with(|| {
 				frame.window.set_title(path.to_str().unwrap());
-				let img = image_loader::open(path.clone());
-				if img.is_err() {
+				let img = if let Some(img) = self.async_image_loader.get(path.to_str().unwrap()) {
+					img
+				} else if let Ok(img) = image_loader::open(path.clone()) {
+					Arc::new(img)
+				} else {
 					return image_loader::image::Image::from_single_image([1, 1], &[255, 0, 255, 255]).to_animation(ui, "dummy");
-				}
-				let img = img.unwrap();
+				};
 				let [w, h] = img.res;
 				let res = if let Some(screen_size) = frame.screen_res() {
 					screen_size

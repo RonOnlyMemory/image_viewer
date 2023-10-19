@@ -7,7 +7,7 @@ use std::{fs, path::PathBuf};
 use egui::epaint::Vec2;
 use native_dialog::FileDialog;
 
-use crate::{animation_player::AnimationPlayer, frame::Frame, valid};
+use crate::{animation_player::AnimationPlayer, frame::Frame, valid, async_image_loader::AsyncImageLoader};
 
 pub struct App {
 	pub pos: Vec2,
@@ -19,6 +19,7 @@ pub struct App {
 	image_size: Vec2,
 	animation_player: AnimationPlayer,
 	pub close_time: Option<f64>,
+	async_image_loader: AsyncImageLoader,
 }
 
 impl App {
@@ -46,6 +47,8 @@ impl App {
 			}
 			c += 1;
 		}
+		let file_list = files.iter().map(|a| a.to_str().unwrap().to_string()).collect();
+		let async_image_loader = AsyncImageLoader::new(file_list, file_index);
 		Self {
 			pos: Vec2::ZERO,
 			target_pos: Vec2::ZERO,
@@ -56,6 +59,7 @@ impl App {
 			image_size: Vec2::ZERO,
 			animation_player: AnimationPlayer::new(),
 			close_time: None,
+			async_image_loader,
 		}
 	}
 	pub fn set_new_image_path(&mut self, path: String) {
