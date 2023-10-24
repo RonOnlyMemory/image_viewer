@@ -42,6 +42,8 @@ impl App {
 
 				new_image = true;
 
+				let _ = frame.set_icon(&img.frames[0].color_image);
+
 				img.to_animation(ui, path.to_str().unwrap())
 			});
 			if new_image {

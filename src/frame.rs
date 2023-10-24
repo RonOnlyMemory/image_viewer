@@ -1,5 +1,5 @@
-use egui::Vec2;
-use winit::dpi::{PhysicalSize, PhysicalPosition};
+use egui::{Vec2, ColorImage};
+use winit::{dpi::{PhysicalSize, PhysicalPosition}, window::BadIcon, platform::windows::WindowExtWindows};
 
 use crate::AppStates;
 
@@ -60,5 +60,38 @@ impl<'a> Frame<'a> {
 	}
 	pub fn screen_res_2(&self) -> Vec2 {
 		self.screen_res().unwrap_or_else(|| self.window_size())
+	}
+	pub fn set_icon(&self, img: &ColorImage) -> Result<(), BadIcon> {
+		let [w, h] = img.size;
+		let mut data = Vec::<u8>::with_capacity(48*48*4);
+		let aspect = w as f32/h as f32;
+		for y in 0..48 {
+			let y = y as f32;
+			let y = y -24.0 +(1.0/aspect).min(1.0)*24.0;
+			let y = y*h as f32/48.0;
+			let y = y*aspect.max(1.0);
+			let y = y as isize;
+			for x in 0..48 {
+				let x = x as f32;
+				let x = x -24.0 +aspect.min(1.0)*24.0;
+				let x = x*w as f32/48.0;
+				let x = x*(1.0/aspect).max(1.0);
+				let x = x as isize;
+				if x >= 0 && y >= 0 && x < w as isize && y < h as isize {
+					let p = img.pixels[y as usize*w +x as usize];
+					data.push(p.r());
+					data.push(p.g());
+					data.push(p.b());
+					data.push(p.a());
+				} else {
+					for _ in 0..4 {
+						data.push(0);
+					}
+				}
+			}
+		}
+		let icon = winit::window::Icon::from_rgba(data, 48, 48)?;
+		self.window.set_taskbar_icon(Some(icon));
+		Ok(())
 	}
 }
