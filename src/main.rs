@@ -104,6 +104,7 @@ fn main() {
 						app_states.focus = false;
 					}
 					WindowEvent::CloseRequested => {
+						window.set_visible(true);
 						cf.set_exit();
 					}
 					WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
@@ -145,6 +146,7 @@ fn main() {
 					}
 					app.update(ctx, &mut frame);
 					if frame.close {
+						window.set_visible(true);
 						cf.set_exit();
 					}
 					ctx.output(|o| {
