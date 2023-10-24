@@ -180,7 +180,7 @@ impl Image {
 				.convert_to_rgba8(res, &data)?;
 			frames.push(Frame {
 				delta: 1.0/60.0,
-				color_image: Arc::new(ColorImage::from_rgba_premultiplied([w as _, h as _], &data)),
+				color_image: Arc::new(ColorImage::from_rgba_unmultiplied([w as _, h as _], &data)),
 			});
 		}
 		Some(Self::from_multiple_frames([w, h], &frames))
