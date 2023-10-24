@@ -2,6 +2,7 @@
 	all(
 		target_os = "windows",
 		not(debug_assertions),
+		not(feature = "release_console"),
 	),
 	windows_subsystem = "windows"
 )]

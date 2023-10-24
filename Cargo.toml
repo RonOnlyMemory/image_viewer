@@ -30,3 +30,6 @@ winit = "0.28.7"
 
 [target.'cfg(windows)'.dependencies]
 native-windows-gui = "1.0.13"
+
+[features]
+release_console = []
