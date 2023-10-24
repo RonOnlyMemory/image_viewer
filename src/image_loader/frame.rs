@@ -1,17 +1,19 @@
+use egui::ColorImage;
+use std::sync::Arc;
 
 
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Frame {
 	pub delta: f64,
-	pub rgba8: Box<[u8]>,
+	pub color_image: Arc<ColorImage>,
 }
 
 impl Frame {
-	pub fn new(delta: f64, data: &[u8]) -> Self {
+	pub fn new(delta: f64, [w, h]: [u32; 2], data: &[u8]) -> Self {
 		Self {
 			delta,
-			rgba8: Box::from(data),
+			color_image: Arc::new(ColorImage::from_rgba_premultiplied([w as _, h as _], data)),
 		}
 	}
 }

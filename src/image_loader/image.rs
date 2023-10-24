@@ -2,12 +2,13 @@ use egui::{Ui, ColorImage, TextureOptions};
 use image::{codecs::{png::PngDecoder, gif::GifDecoder}, AnimationDecoder};
 use jxl_oxide::{image::SizeHeader, JxlImage};
 use resvg::usvg::TreeParsing;
+use std::sync::Arc;
 
 use crate::animation::Animation;
 
 use super::{frame::Frame, pixel_format::PixelFormat};
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Image {
 	pub res: [u32; 2],
 	pub frames: Box<[Frame]>,
@@ -27,7 +28,7 @@ impl Image {
 		}
 	}
 	pub fn from_single_image(res: [u32; 2], data: &[u8]) -> Self {
-		Self::from_single_frame(res, Frame::new(1.0, data))
+		Self::from_single_frame(res, Frame::new(1.0, res, data))
 	}
 	pub fn load_img(data: &[u8]) -> Option<Self> {
 		let img = image::load_from_memory(data).ok()?;
@@ -35,7 +36,7 @@ impl Image {
 		let h = img.height();
 		let data = img.into_rgba8();
 		let data = data.as_raw();
-		Some(Self::from_single_frame([w, h], Frame::new(1.0, data)))
+		Some(Self::from_single_frame([w, h], Frame::new(1.0, [w, h], data)))
 	}
 	pub fn load_jxl(data: &[u8]) -> Option<Self> {
 		let mut img = JxlImage::from_reader(data).ok()?;
@@ -77,7 +78,7 @@ impl Image {
 			let pixel_format = PixelFormat::from(frame.color_mode());
 			let data = frame.data();
 			let data = pixel_format.convert_to_rgba8(res, data)?;
-			new_frames.push(Frame::new(delta.max(1) as f64/1000.0, &data));
+			new_frames.push(Frame::new(delta.max(1) as f64/1000.0, res, &data));
 		}
 		Some(Self::from_multiple_frames(res, &new_frames))
 	}
@@ -91,7 +92,7 @@ impl Image {
 		let frame = frames.peek().unwrap();
 		let img = frame.as_ref().unwrap();
 		let img = img.buffer().clone();
-		let res = [img.width() as u32, img.height() as u32];
+		let res = [img.width(), img.height()];
 		let frames = frames.into_iter().map(|frame| {
 			let frame = frame.unwrap();
 			let data = frame.buffer();
@@ -100,7 +101,7 @@ impl Image {
 			if a == 0 || b == 0 {
 				delta = 1.0/10.0;
 			}
-			Frame::new(delta, data)
+			Frame::new(delta, res, data)
 		}).collect::<Vec<_>>();
 		Some(Self::from_multiple_frames(res, &frames))
 	}
@@ -118,7 +119,7 @@ impl Image {
 		let frame = frames.peek().unwrap();
 		let img = frame.as_ref().unwrap();
 		let img = img.buffer().clone();
-		let res = [img.width() as u32, img.height() as u32];
+		let res = [img.width(), img.height()];
 		let frames = frames.into_iter().map(|frame| {
 			let frame = frame.unwrap();
 			let data = frame.buffer();
@@ -127,7 +128,7 @@ impl Image {
 			if a == 0 || b == 0 {
 				delta = 1.0/10.0;
 			}
-			Frame::new(delta, data)
+			Frame::new(delta, res, data)
 		}).collect::<Vec<_>>();
 		Some(Self::from_multiple_frames(res, &frames))
 	}
@@ -179,7 +180,7 @@ impl Image {
 				.convert_to_rgba8(res, &data)?;
 			frames.push(Frame {
 				delta: 1.0/60.0,
-				rgba8: data.into_boxed_slice(),
+				color_image: Arc::new(ColorImage::from_rgba_premultiplied([w as _, h as _], &data)),
 			});
 		}
 		Some(Self::from_multiple_frames([w, h], &frames))
@@ -196,13 +197,11 @@ impl Image {
 			magnification: egui::TextureFilter::Nearest,
 			minification: egui::TextureFilter::Linear,
 		};
-		let [w, h] = self.res;
-		let res = [w as usize, h as usize];
 		Animation {
 			frames: self.frames.iter().enumerate().map(|(c, a)| crate::animation::Frame {
 				delta: a.delta,
 				texture: {
-					let img = ColorImage::from_rgba_unmultiplied(res, &a.rgba8);
+					let img = a.color_image.clone();
 					let texture = ui.ctx().load_texture(&format!("{} {}", name, c), img, options);
 					texture
 				},
