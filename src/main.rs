@@ -130,6 +130,7 @@ fn main() {
 				}
 			}
 			Event::MainEventsCleared | Event::RedrawRequested(_) => {
+				let mut close = false;
 				app_states.drag_window = false;
 				let mut delta = time.elapsed().as_secs_f64();
 				time = Instant::now();
@@ -146,10 +147,7 @@ fn main() {
 						gpi.update(&mut app, &mut frame);
 					}
 					app.update(ctx, &mut frame);
-					if frame.close {
-						window.set_visible(false);
-						cf.set_exit();
-					}
+					close = frame.close;
 					ctx.output(|o| {
 						if let Some(open_url) = o.open_url.clone() {
 							let _ = webbrowser::open(&open_url.url);
@@ -166,6 +164,11 @@ fn main() {
 				}
 				egui_glow.paint(&window);
 				surface.swap_buffers(&ctx).unwrap();
+
+				if close {
+					window.set_visible(false);
+					cf.set_exit();
+				}
 
 				if e == Event::MainEventsCleared {
 					let md = mouse_delta;
