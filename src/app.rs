@@ -82,6 +82,8 @@ impl App {
 			c += 1;
 		}
 		self.file_index = file_index;
+		let file_list = files.iter().map(|a| a.to_str().unwrap().to_string()).collect();
+		self.async_image_loader = AsyncImageLoader::new(file_list, file_index);
 		self.async_image_loader.set_index(file_index);
 		self.files = files;
 		self.animation_player.clear();
